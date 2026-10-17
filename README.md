@@ -19,6 +19,7 @@ warp fetches the package the first time a program uses it and keeps it in `~/.ca
 | [webgl](webgl) | polylines, filled polygons, stars, grids, function plots and bar charts on warp's canvas |
 | [ciphers](ciphers) | Caesar, ROT13, Atbash, Vigenère and Morse code |
 | [life](life) | Conway's Game of Life, as text or on the canvas |
+| [svg](svg) | SVG pictures and bar charts as text; a package of several files that passes on chosen words |
 | [uniscript](uniscript) | readable ASCII names for Unicode (`\:alpha` is α), from [pannous/uniscript](https://github.com/pannous/uniscript) |
 
 ## Using a package
@@ -44,7 +45,9 @@ program (`colors.warp`) or in warp's own library wins over the package.
 ## Adding a package
 
 1. A folder named like the package, holding `<name>.warp`: the module that `use <name>` loads. Declare its version at
-   the top with `version 1.0.0`.
+   the top with `version 1.0.0`. More files may lie beside it: what the main file `use`s reaches the programs too,
+   a `from shapes import rect, circle` only the words it names, so the main file is the package's export list
+   (see [svg](svg)).
 2. `package.warp`, a short manifest: `description: "…"` and `license: MIT`.
 3. `README.md` with one usage example, and `example.warp`: a program that shows the package at work and checks
    itself with `assert`, run with `warp example.warp` in the folder.
