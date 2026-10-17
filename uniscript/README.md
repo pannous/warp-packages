@@ -6,7 +6,7 @@ warp's binding to its prebuilt C library (`uniscript.warp`).
 
 ```warp
 use uniscript
-print uniscript("\\:alpha + \\:beta")   // α + β
+print uniscript("\\:alpha + \\:beta")   # α + β
 ```
 
 Another version than the one in `package.warp`: `uniscript: 1.0.11` in your `packages.warp`.

@@ -1,0 +1,3 @@
+# the folder is the package: `use life` loads life.warp, tag life@<version> pins a release
+description: "Conway's Game of Life on a wrapping grid, as text or on the canvas"
+license: MIT

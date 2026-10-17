@@ -1,22 +1,23 @@
-// life: Conway's Game of Life on a grid that wraps around its edges. A world is a list of rows, each a list of
-// 0 (dead) and 1 (alive); `parse` and `render` read and write it as text, # alive and . dead
+# life: Conway's Game of Life on a grid that wraps around its edges. A world is a list of rows, each a list of
+# 0 (dead) and 1 (alive); `parse` and `render` read and write it as text, # alive and . dead
 use draw
+version 1.0.0
 
-// "#.#\n.#." → [[1 0 1] [0 1 0]]
+# "#.#\n.#." → [[1 0 1] [0 1 0]]
 parse(picture) := [[if c == '#' then 1 else 0 for c in row] for row in lines(trim(picture))]
 render(world) := join([join([if cell == 1 then "#" else "." for cell in row], "") for row in world], "\n")
 empty_world(width, height) := [[0 for x in 1 to width] for y in 1 to height]
-// a pattern put into a bigger empty world, its top left corner at column x, row y (from 1)
+# a pattern put into a bigger empty world, its top left corner at column x, row y (from 1)
 def place(pattern, width, height, x, y) {
 	world = empty_world(width, height)
 	for row in 1 to count(pattern) { for col in 1 to count(pattern#row) { world#(y + row - 1)#(x + col - 1) = pattern#row#col } }
 	world
 }
 
-// the cell at column x, row y counted from 1, wrapping around the edges
+# the cell at column x, row y counted from 1, wrapping around the edges
 at(world, x, y) := world#((y - 1 + count(world)) % count(world) + 1)#((x - 1 + count(world#1)) % count(world#1) + 1)
 neighbours(world, x, y) := sum([at(world, x + dx, y + dy) for dx in -1 to 1 for dy in -1 to 1 if dx != 0 or dy != 0])
-// born with 3 neighbours, survives with 2 or 3
+# born with 3 neighbours, survives with 2 or 3
 def next_state(alive, around) {
 	if around == 3 { return 1 }
 	if alive == 1 and around == 2 { return 1 }
@@ -31,7 +32,7 @@ population(world) := sum([sum(row) for row in world])
 
 glider = parse(".#.\n..#\n###")
 blinker = parse("###")
-// cells as squares of `size` pixels on draw's canvas
+# cells as squares of `size` pixels on draw's canvas
 def draw_world(world, size, color = black) {
 	for y in 1 to count(world) { for x in 1 to count(world#y) { if world#y#x == 1 { rect((x - 1) * size, (y - 1) * size, size, size, color) } } }
 }

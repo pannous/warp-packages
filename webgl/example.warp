@@ -1,5 +1,5 @@
 #!/usr/bin/env warp
-// warp example.warp: a star, a polygon and a sine graph on a 200×100 canvas, saved as webgl_example.png
+# warp example.warp: a star, a polygon and a sine graph on a 200×100 canvas, saved as webgl_example.png
 use draw
 use webgl
 

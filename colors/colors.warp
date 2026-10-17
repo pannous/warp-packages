@@ -1,13 +1,14 @@
-// colors: conversions and palettes over draw's colors, numbers 0xAARRGGBB (rgb, hsv, red, …), so a palette color
-// fills a rect as it is
+# colors: conversions and palettes over draw's colors, numbers 0xAARRGGBB (rgb, hsv, red, …), so a palette color
+# fills a rect as it is
 use draw
+version 1.0.0
 
-// the channels 0 to 255
+# the channels 0 to 255
 red_of(color) := (color /! 65536) % 256
 green_of(color) := (color /! 256) % 256
 blue_of(color) := color % 256
 
-// "#ff8800" or "f80" → a color; to_hex gives "#ff8800" back
+# "#ff8800" or "f80" → a color; to_hex gives "#ff8800" back
 def from_hex(text) {
 	digits = if text#1 == '#' then text[1:] else text
 	if count(digits) == 3 { digits = digits#1 + digits#1 + digits#2 + digits#2 + digits#3 + digits#3 }
@@ -16,12 +17,12 @@ def from_hex(text) {
 two_digits(channel) := pad_left(to_base(channel, 16), 2).replace(" ", "0")
 to_hex(color) := "#" + two_digits(red_of(color)) + two_digits(green_of(color)) + two_digits(blue_of(color))
 
-// hue in degrees, saturation and lightness from 0 to 1, as in CSS hsl()
+# hue in degrees, saturation and lightness from 0 to 1, as in CSS hsl()
 def hsl(h, s, l) {
 	v = l + s * min(l, 1 - l)
 	hsv(h, if v == 0 then 0.0 else 2 * (1 - l / v), v)
 }
-// [hue, saturation, lightness] of a color
+# [hue, saturation, lightness] of a color
 def to_hsl(color) {
 	r = red_of(color) / 255.0
 	g = green_of(color) / 255.0
@@ -36,15 +37,15 @@ def to_hsl(color) {
 	[if h < 0 then h + 360 else h, s, l]
 }
 
-// a step t from 0 (all a) to 1 (all b) between two colors
+# a step t from 0 (all a) to 1 (all b) between two colors
 mix_channel(a, b, t) := a + (b - a) * t
 mix(a, b, t) := rgb(mix_channel(red_of(a), red_of(b), t), mix_channel(green_of(a), green_of(b), t), mix_channel(blue_of(a), blue_of(b), t))
 lighten(color, amount) := mix(color, white, amount)
 darken(color, amount) := mix(color, black, amount)
-// n colors from a to b, both included
+# n colors from a to b, both included
 gradient(a, b, n) := [mix(a, b, i / (n - 1)) for i in 0 to n - 1]
 
-// the same color turned around the color wheel
+# the same color turned around the color wheel
 def rotate_hue(color, degrees) {
 	h = to_hsl(color)
 	hsl(h#1 + degrees, h#2, h#3)
@@ -52,12 +53,12 @@ def rotate_hue(color, degrees) {
 complement(color) := rotate_hue(color, 180)
 triad(color) := [color, rotate_hue(color, 120), rotate_hue(color, 240)]
 analogous(color) := [rotate_hue(color, -30), color, rotate_hue(color, 30)]
-// n hues spread evenly, as for the lines of a chart
+# n hues spread evenly, as for the lines of a chart
 rainbow(n) := [hsl(360 * i / n, 0.8, 0.5) for i in 0 to n - 1]
 
-// relative luminance and the WCAG contrast ratio, 1 (none) to 21 (black on white); 4.5 is enough for text
+# relative luminance and the WCAG contrast ratio, 1 (none) to 21 (black on white); 4.5 is enough for text
 linear(channel) := { c = channel / 255.0; if c <= 0.03928 then c / 12.92 else ((c + 0.055) / 1.055) ^ 2.4 }
 luminance(color) := 0.2126 * linear(red_of(color)) + 0.7152 * linear(green_of(color)) + 0.0722 * linear(blue_of(color))
 contrast(a, b) := (max(luminance(a), luminance(b)) + 0.05) / (min(luminance(a), luminance(b)) + 0.05)
-// black or white, whichever reads better on the background
+# black or white, whichever reads better on the background
 text_color_on(background) := if contrast(background, black) >= contrast(background, white) then black else white

@@ -1,8 +1,9 @@
-// webgl: charts and shapes on warp's canvas (lib/draw: the browser's canvas in the playground, natively a window or a
-// PNG). Points are [x, y] in pixels, y down; colors are draw's numbers 0xAARRGGBB
+# webgl: charts and shapes on warp's canvas (lib/draw: the browser's canvas in the playground, natively a window or a
+# PNG). Points are [x, y] in pixels, y down; colors are draw's numbers 0xAARRGGBB
 use draw
+version 1.0.0
 
-// lines through the points in order; closed also back to the first
+# lines through the points in order; closed also back to the first
 def polyline(points, color, closed = false) {
 	n = count(points)
 	last = if closed then n else n - 1
@@ -14,7 +15,7 @@ def polyline(points, color, closed = false) {
 }
 outline(points, color) := polyline(points, color, closed: true)
 
-// fills the pixels whose centers lie inside the polygon (even-odd rule), row by row
+# fills the pixels whose centers lie inside the polygon (even-odd rule), row by row
 def fill_polygon(points, color) {
 	n = count(points)
 	top = cell(min([p#2 for p in points]))
@@ -34,17 +35,17 @@ def fill_polygon(points, color) {
 	}
 }
 
-// a star of `spikes` points around x, y
+# a star of `spikes` points around x, y
 star_points(x, y, outer, inner, spikes) := [[x + r * sin(i * pi / spikes), y - r * cos(i * pi / spikes)] for i in 0 to 2 * spikes - 1 for r in [if i % 2 == 0 then outer else inner]]
 star(x, y, outer, inner, spikes, color) := fill_polygon(star_points(x, y, outer, inner, spikes), color)
 
-// lines every `spacing` pixels over the whole canvas
+# lines every `spacing` pixels over the whole canvas
 def grid(spacing, color) {
 	for x in 0 to canvas_width /! spacing { line(x * spacing, 0, x * spacing, canvas_height - 1, color) }
 	for y in 0 to canvas_height /! spacing { line(0, y * spacing, canvas_width - 1, y * spacing, color) }
 }
 
-// the graph of f from x_from to x_to over the whole canvas, its y range found by sampling, with the axes in gray
+# the graph of f from x_from to x_to over the whole canvas, its y range found by sampling, with the axes in gray
 def plot(f, x_from, x_to, color) {
 	steps = canvas_width - 1
 	xs = [x_from + (x_to - x_from) * i / steps for i in 0 to steps]
@@ -58,7 +59,7 @@ def plot(f, x_from, x_to, color) {
 	polyline([[i, to_row(ys#(i + 1))] for i in 0 to steps], color)
 }
 
-// one bar per value, scaled to the canvas height, hues around the color wheel
+# one bar per value, scaled to the canvas height, hues around the color wheel
 def bar_chart(values) {
 	n = count(values)
 	width = canvas_width / n

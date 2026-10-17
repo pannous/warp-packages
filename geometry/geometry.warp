@@ -1,30 +1,31 @@
-// geometry: 2D vectors and the shapes made of them; a polygon is a list of Vec corners in order
+# geometry: 2D vectors and the shapes made of them; a polygon is a list of Vec corners in order
 use math
+version 1.0.0
 
 class Vec { x = 0.0; y = 0.0
 	plus(other) := Vec(x + other.x, y + other.y)
 	minus(other) := Vec(x - other.x, y - other.y)
 	scaled(factor) := Vec(x * factor, y * factor)
 	dot(other) := x * other.x + y * other.y
-	// the z of the 3D cross product: > 0 when other turns left of this one
+	# the z of the 3D cross product: > 0 when other turns left of this one
 	cross(other) := x * other.y - y * other.x
 	magnitude() := sqrt(x * x + y * y)
 	distance(other) := minus(other).magnitude()
 	normalized() := scaled(1 / magnitude())
-	// turned counterclockwise by degrees
-	rotated(degrees) := { r = degrees * pi / 180; Vec(x * cos(r) - y * sin(r), x * sin(r) + y * cos(r)) }
+	# turned counterclockwise by degrees
+	rotated(degrees) := { r = degrees * pi / 180; Vec(x * cosine(r) - y * sine(r), x * sin(r) + y * cos(r)) }
 	angle() := atan2(y, x) * 180 / pi
 }
-// a step t from 0 (all a) to 1 (all b) on the line between two points
+# a step t from 0 (all a) to 1 (all b) on the line between two points
 lerp(a, b, t) := a.plus(b.minus(a).scaled(t))
 
 circle_area(radius) := pi * radius * radius
 circle_circumference(radius) := 2 * pi * radius
-// the corners of a regular polygon around a center, the first one straight right of it
+# the corners of a regular polygon around a center, the first one straight right of it
 regular_polygon(center, radius, sides) := [center.plus(Vec(radius, 0).rotated(360 * i / sides)) for i in 0 to sides - 1]
 rectangle(corner, width, height) := [corner, Vec(corner.x + width, corner.y), Vec(corner.x + width, corner.y + height), Vec(corner.x, corner.y + height)]
 
-// the shoelace formula: > 0 for corners counterclockwise
+# the shoelace formula: > 0 for corners counterclockwise
 def signed_area(polygon) {
 	sum = 0.0
 	n = count(polygon)
@@ -43,7 +44,7 @@ def centroid(polygon) {
 	for corner in polygon { sum = sum.plus(corner) }
 	sum.scaled(1 / count(polygon))
 }
-// [lowest corner, highest corner] of the box around the points
+# [lowest corner, highest corner] of the box around the points
 def bounds(points) {
 	low = points#1
 	high = points#1
@@ -53,7 +54,7 @@ def bounds(points) {
 	}
 	[low, high]
 }
-// even-odd rule: a ray to the right crosses the border an odd number of times from inside
+# even-odd rule: a ray to the right crosses the border an odd number of times from inside
 def contains(polygon, point) {
 	inside = false
 	n = count(polygon)

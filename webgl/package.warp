@@ -1,0 +1,3 @@
+# the folder is the package: `use webgl` loads webgl.warp, tag webgl@<version> pins a release
+description: "polylines, filled polygons, stars, grids, function plots and bar charts on warp's canvas"
+license: MIT

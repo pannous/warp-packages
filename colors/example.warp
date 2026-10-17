@@ -1,5 +1,5 @@
 #!/usr/bin/env warp
-// warp example.warp: the colors package at work, an assert stops at the first wrong value
+# warp example.warp: the colors package at work, an assert stops at the first wrong value
 use colors
 
 orange = from_hex("#ff8800")

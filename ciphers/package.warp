@@ -1,0 +1,3 @@
+# the folder is the package: `use ciphers` loads ciphers.warp, tag ciphers@<version> pins a release
+description: "Caesar, ROT13, Atbash, Vigenère and Morse code"
+license: MIT

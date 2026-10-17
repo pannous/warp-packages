@@ -1,5 +1,5 @@
 #!/usr/bin/env warp
-// warp example.warp: the ciphers package at work, an assert stops at the first wrong value
+# warp example.warp: the ciphers package at work, an assert stops at the first wrong value
 use ciphers
 
 assert caesar("Hello, World!", 3) == "Khoor, Zruog!"

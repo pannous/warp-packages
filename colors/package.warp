@@ -1,0 +1,3 @@
+# the folder is the package: `use colors` loads colors.warp, tag colors@<version> pins a release
+description: "conversions (hex, hsl), mixing and palettes for draw's colors"
+license: MIT

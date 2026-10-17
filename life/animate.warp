@@ -1,5 +1,5 @@
 #!/usr/bin/env warp
-// warp animate.warp: a glider crossing a 24×24 world on the canvas, 40 generations
+# warp animate.warp: a glider crossing a 24×24 world on the canvas, 40 generations
 use draw
 use life
 
