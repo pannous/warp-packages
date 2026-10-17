@@ -1,0 +1,16 @@
+#!/usr/bin/env warp
+// warp animate.warp: a glider crossing a 24×24 world on the canvas, 40 generations
+use draw
+use life
+
+size = 8
+canvas(24 * size, 24 * size)
+world = place(glider, 24, 24, 2, 2)
+for generation in 1 to 40 {
+	clear(white)
+	draw_world(world, size, purple)
+	show()
+	sleep 50ms
+	world = step(world)
+}
+print "after 40 generations: \(population(world)) cells alive"

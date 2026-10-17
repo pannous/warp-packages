@@ -1,0 +1,70 @@
+// webgl: charts and shapes on warp's canvas (lib/draw: the browser's canvas in the playground, natively a window or a
+// PNG). Points are [x, y] in pixels, y down; colors are draw's numbers 0xAARRGGBB
+use draw
+
+// lines through the points in order; closed also back to the first
+def polyline(points, color, closed = false) {
+	n = count(points)
+	last = if closed then n else n - 1
+	for i in 1 to last {
+		a = points#i
+		b = points#(i % n + 1)
+		line(a#1, a#2, b#1, b#2, color)
+	}
+}
+outline(points, color) := polyline(points, color, closed: true)
+
+// fills the pixels whose centers lie inside the polygon (even-odd rule), row by row
+def fill_polygon(points, color) {
+	n = count(points)
+	top = cell(min([p#2 for p in points]))
+	bottom = cell(max([p#2 for p in points]))
+	for row in top to bottom {
+		y = row + 0.5
+		crossings = []
+		for i in 1 to n {
+			a = points#i
+			b = points#(i % n + 1)
+			if (a#2 > y) != (b#2 > y) { crossings.add(a#1 + (y - a#2) * (b#1 - a#1) / (b#2 - a#2)) }
+		}
+		crossings = crossings.sort()
+		for k in 1 to count(crossings) /! 2 {
+			for col in cell(crossings#(2 * k - 1) + 0.5) to cell(crossings#(2 * k) - 0.5) { dot(col, row, color) }
+		}
+	}
+}
+
+// a star of `spikes` points around x, y
+star_points(x, y, outer, inner, spikes) := [[x + r * sin(i * pi / spikes), y - r * cos(i * pi / spikes)] for i in 0 to 2 * spikes - 1 for r in [if i % 2 == 0 then outer else inner]]
+star(x, y, outer, inner, spikes, color) := fill_polygon(star_points(x, y, outer, inner, spikes), color)
+
+// lines every `spacing` pixels over the whole canvas
+def grid(spacing, color) {
+	for x in 0 to canvas_width /! spacing { line(x * spacing, 0, x * spacing, canvas_height - 1, color) }
+	for y in 0 to canvas_height /! spacing { line(0, y * spacing, canvas_width - 1, y * spacing, color) }
+}
+
+// the graph of f from x_from to x_to over the whole canvas, its y range found by sampling, with the axes in gray
+def plot(f, x_from, x_to, color) {
+	steps = canvas_width - 1
+	xs = [x_from + (x_to - x_from) * i / steps for i in 0 to steps]
+	ys = [f(x) for x in xs]
+	low = min(ys)
+	high = max(ys)
+	span = if high == low then 1 else high - low
+	to_row(y) := (canvas_height - 1) * (high - y) / span
+	if low <= 0 and high >= 0 { line(0, to_row(0), steps, to_row(0), gray) }
+	if x_from <= 0 and x_to >= 0 { column = steps * -x_from / (x_to - x_from); line(column, 0, column, canvas_height - 1, gray) }
+	polyline([[i, to_row(ys#(i + 1))] for i in 0 to steps], color)
+}
+
+// one bar per value, scaled to the canvas height, hues around the color wheel
+def bar_chart(values) {
+	n = count(values)
+	width = canvas_width / n
+	high = max(values)
+	for i in 1 to n {
+		height = (canvas_height - 1) * values#i / high
+		rect((i - 1) * width + 1, canvas_height - height, width - 2, height, hsv(360 * (i - 1) / n, 0.7, 0.9))
+	}
+}

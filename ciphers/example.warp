@@ -1,0 +1,13 @@
+#!/usr/bin/env warp
+// warp example.warp: the ciphers package at work, an assert stops at the first wrong value
+use ciphers
+
+assert caesar("Hello, World!", 3) == "Khoor, Zruog!"
+assert uncaesar("Khoor, Zruog!", 3) == "Hello, World!"
+assert rot13(rot13("Warp")) == "Warp"
+assert atbash("abc XYZ") == "zyx CBA"
+assert vigenere("attack at dawn", "lemon") == "lxfopv ef rnhr"
+assert unvigenere("lxfopv ef rnhr", "lemon") == "attack at dawn"
+assert to_morse("SOS help") == "... --- ... / .... . .-.. .--."
+assert from_morse("... --- ... / .... . .-.. .--.") == "sos help"
+print to_morse("warp packages")

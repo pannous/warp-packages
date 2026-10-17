@@ -1,0 +1,22 @@
+#!/usr/bin/env warp
+// warp example.warp: the geometry package at work, an assert stops at the first wrong value
+use geometry
+
+a = Vec(3, 4)
+assert a.magnitude() == 5
+assert a.plus(Vec(1, 1)).x == 4
+assert a.dot(Vec(1, 0)) == 3
+assert Vec(1, 0).rotated(90).y ≈ 1
+assert lerp(Vec(0, 0), Vec(10, 20), 0.5).y == 10
+
+square = rectangle(Vec(0, 0), 2, 2)
+assert area(square) == 4
+assert perimeter(square) == 8
+assert centroid(square).x == 1
+assert contains(square, Vec(1, 1))
+assert not contains(square, Vec(3, 1))
+assert bounds(square)#2.y == 2
+
+hexagon = regular_polygon(Vec(0, 0), 1, 6)
+assert area(hexagon) ≈ 3 * sqrt(3) / 2
+print "a hexagon of radius 1: area \(area(hexagon)), perimeter \(perimeter(hexagon))"

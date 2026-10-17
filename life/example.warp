@@ -1,0 +1,11 @@
+#!/usr/bin/env warp
+// warp example.warp: a blinker blinks, a glider glides; an assert stops at the first wrong value
+use life
+
+assert render(step(place(blinker, 5, 5, 2, 3))) == ".....\n..#..\n..#..\n..#..\n....."
+world = place(glider, 8, 8, 1, 1)
+later = run(world, 4)
+assert population(later) == 5
+// after 4 generations the glider is the same shape, one cell further right and down
+assert later == place(glider, 8, 8, 2, 2)
+print render(later)

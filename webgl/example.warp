@@ -1,0 +1,15 @@
+#!/usr/bin/env warp
+// warp example.warp: a star, a polygon and a sine graph on a 200×100 canvas, saved as webgl_example.png
+use draw
+use webgl
+
+canvas(200, 100)
+clear(white)
+grid(20, 0xFFE0E0E0)
+plot(x => sin(x), -pi, pi, blue)
+star(50, 50, 40, 16, 5, orange)
+outline([[130, 20], [190, 20], [160, 80]], red)
+fill_polygon([[140, 30], [180, 30], [160, 65]], with_alpha(red, 0.5))
+show()
+save "webgl_example.png"
+print "drew webgl_example.png"
