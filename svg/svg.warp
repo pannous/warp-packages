@@ -1,0 +1,26 @@
+# svg: pictures as SVG text, for a web page or a file. The package is three files: this one says what a program gets,
+# shapes.warp makes the elements and tags.warp writes XML; `from … import` names each word passed on, so the helpers
+# of both files (escape_xml, element, coordinate, …) and colors' other words stay inside the package
+version 1.0.0
+from shapes import rect, circle, line, polyline, polygon, label
+from colors import from_hex, mix, rainbow
+
+# the whole picture: its shapes, the elements of rect, circle, … in drawing order, on a background
+svg(width, height, shapes, background = 0xFFFFFFFF) := join([
+	"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(width)\" height=\"\(height)\" viewBox=\"0 0 \(width) \(height)\">",
+	rect(0, 0, width, height, background)
+] + shapes + ["</svg>"], "\n")
+
+# one bar per value, scaled to the height, in rainbow colors, each value written above its bar
+def bar_chart(values, width = 300, height = 200) {
+	n = count(values)
+	bar = width / n
+	high = max(values)
+	colors = rainbow(n)
+	bars = []
+	for i in 1 to n {
+		top = 20 + (height - 20) * (1 - values#i / high)
+		bars = bars + [rect((i - 1) * bar + 2, top, bar - 4, height - top, colors#i), label((i - 1) * bar + 4, top - 4, values#i, 0xFF333333)]
+	}
+	svg(width, height, bars)
+}

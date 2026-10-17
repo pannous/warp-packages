@@ -1,2 +1,4 @@
-# pictures the examples save
+# pictures the examples save, packages a run fetches
 *_example.png
+*_example.svg
+packages/

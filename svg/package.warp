@@ -1,0 +1,3 @@
+# the folder is the package: `use svg` loads svg.warp, which names what it passes on from shapes.warp and colors
+description: "SVG pictures and bar charts as text, a package of several files that re-exports selectively"
+license: MIT

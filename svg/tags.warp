@@ -1,0 +1,8 @@
+# svg's own helpers, not re-exported: the program sees none of these words
+# text safe inside an XML attribute or element
+escape_xml(t) := replace(replace(replace(replace(text(t), "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), "\"", "&quot;")
+# a number as SVG writes it: whole numbers without a fraction
+coordinate(n) := str(round(n * 100) / 100)
+attribute(name, value) := " " + name + "=\"" + escape_xml(value) + "\""
+# <name a="1" b="2"/>, its attributes given as [name, value] pairs
+element(name, pairs) := "<" + name + join([attribute(p#1, p#2) for p in pairs], "") + "/>"

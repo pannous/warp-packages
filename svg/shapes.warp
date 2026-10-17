@@ -1,0 +1,14 @@
+# the shapes of an SVG picture, each an element as text; colors are draw's numbers 0xAARRGGBB
+from tags import element, coordinate, escape_xml
+from colors import to_hex
+
+fill(color) := ["fill", to_hex(color)]
+stroke(color, width) := [["stroke", to_hex(color)], ["stroke-width", coordinate(width)], ["fill", "none"]]
+points_text(points) := join([coordinate(p#1) + "," + coordinate(p#2) for p in points], " ")
+
+rect(x, y, width, height, color) := element("rect", [["x", coordinate(x)], ["y", coordinate(y)], ["width", coordinate(width)], ["height", coordinate(height)], fill(color)])
+circle(x, y, radius, color) := element("circle", [["cx", coordinate(x)], ["cy", coordinate(y)], ["r", coordinate(radius)], fill(color)])
+line(x1, y1, x2, y2, color, width = 1) := element("line", [["x1", coordinate(x1)], ["y1", coordinate(y1)], ["x2", coordinate(x2)], ["y2", coordinate(y2)]] + stroke(color, width))
+polyline(points, color, width = 1) := element("polyline", [["points", points_text(points)]] + stroke(color, width))
+polygon(points, color) := element("polygon", [["points", points_text(points)], fill(color)])
+label(x, y, words, color, size = 12) := "<text x=\"" + coordinate(x) + "\" y=\"" + coordinate(y) + "\" font-size=\"" + coordinate(size) + "\" fill=\"" + to_hex(color) + "\" font-family=\"sans-serif\">" + escape_xml(words) + "</text>"

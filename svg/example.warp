@@ -1,0 +1,19 @@
+#!/usr/bin/env warp
+# warp example.warp: a small SVG picture and a bar chart, saved as svg_example.svg; an assert stops at the first wrong value
+use svg
+use file
+
+sky = from_hex("#87ceeb")
+picture = svg(120, 80, [
+	circle(60, 40, 25, mix(sky, from_hex("#ffd700"), 0.8)),
+	line(0, 70, 120, 70, from_hex("#228b22"), width: 4),
+	label(8, 16, "sun & sky", from_hex("#003366"))
+], background: sky)
+assert picture.contains("<circle cx=\"60\" cy=\"40\" r=\"25\"")
+assert picture.contains("sun &amp; sky")
+assert picture.contains("stroke-width=\"4\"")
+
+chart = bar_chart([3, 5, 2, 8])
+assert count(chart.split("<rect")) == 6
+write("svg_example.svg", chart)
+print picture
