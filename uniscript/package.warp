@@ -1,0 +1,5 @@
+// a proxy: the package lives in its own repository; `use uniscript` gets tag v1.0.10 of it and calls its prebuilt
+// C library c/ffi/uniscript_c.wasm through uniscript.warp, the binding beside this file
+repository: pannous/uniscript
+version: 1.0.10
+library: "c/ffi/uniscript_c"
