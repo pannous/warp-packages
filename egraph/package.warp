@@ -1,0 +1,3 @@
+# the folder is the package: `use egraph` loads egraph.warp, tag egraph@<version> pins a release
+description: "equality saturation over code: simplify and equal under laws and rules, with loud limits"
+license: MIT

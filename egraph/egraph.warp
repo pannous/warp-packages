@@ -1,0 +1,262 @@
+# egraph: equality saturation over code (notes/egraphs.md in warp). Laws and rules grow an e-graph holding every
+# form of the code they make equal, never losing one, then the smallest form is taken out:
+#   algebra = law(data(a * b), data(b * a)) + law(data((a * b) / c), data(a * (b / c))) + rule(data(a / a), data(1)) + rule(data(a * 1), data(a))
+#   simplify(data(2 * y / 2), algebra)     # y
+# A rule set `rules {…}` cannot hold `a * b = b * a` (it rewrites forever); an e-graph can.
+version 0.1.0
+
+# the bounds of one saturation: past them the graph stops growing and says so
+node_limit = 10000
+round_limit = 30
+# a pattern's variable, [variable_mark, name]
+variable_mark = "?"
+grouping_bracket = "("
+operation_label = "operation "
+list_label = "list "
+
+# --- rules ---------------------------------------------------------------------------------------------------------
+# code of the shape `from` rewritten to `to`, one way. In a pattern every name in an operand's place is a variable,
+# a call's head and every number stand for themselves: in `data(f(a) + 0)`, a is a variable, f and 0 are not
+rule(from, to) := {
+	if not binds_all(from, to) { error("egraph rule: " + text(to) + " names a variable " + text(from) + " does not bind") }
+	[[pattern_of(from, no), pattern_of(to, no)]]
+}
+# an equality holding both ways; a way whose result names a variable the other side lacks is left out (`a / a = 1`)
+law(a, b) := directed(a, b) + directed(b, a)
+directed(from, to) := if binds_all(from, to) then rule(from, to) else []
+binds_all(from, to) := {
+	bound = variables_of(pattern_of(from, no))
+	variables_of(pattern_of(to, no)).all(name => name in bound)
+}
+
+# a pattern: a variable [variable_mark, name], else [label, [child patterns], the code of a leaf]
+pattern_of(code, head: bool) := {
+	code = ungrouped(code)
+	if code is symbol and not head { return [variable_mark, text(code)] }
+	parts = parts_of(code)
+	[label_of(code), [pattern_of(parts[i], i == 0 and code is list) for i in 0 ..< #parts], code]
+}
+variables_of(pattern) := {
+	if pattern[0] == variable_mark { return [pattern[1]] }
+	names = []
+	for child in pattern[1] { names += variables_of(child) }
+	names
+}
+
+# --- code as e-nodes -----------------------------------------------------------------------------------------------
+# `(a * b)` written in parentheses is the code a * b; a call `f()` keeps its brackets
+ungrouped(code) := if code is list and bracket_of(code) == grouping_bracket and #code == 1 and not (code#1 is symbol) then ungrouped(code#1) else code
+is_operation(code) := text(type(code)) == "class operation"
+label_of(code) := {
+	if code == ø { return "ø" }
+	if is_operation(code) { return operation_label + code.op }
+	if code is list { return list_label + bracket_of(code) }
+	text(type(code)) + " " + text(code)
+}
+parts_of(code) := {
+	if code == ø { return [] }
+	if is_operation(code) { return [code.key, code.value] }
+	if code is list { return [part for part in code] }
+	[]
+}
+
+# --- the e-graph ---------------------------------------------------------------------------------------------------
+# classes are numbers; an e-node is [label, [its children's classes]]
+class EGraph {
+	parent = []    # union-find: each class's parent, a root class its own
+	nodes = []     # the e-nodes of each root class
+	memo = {}      # an e-node's key to its class: the same e-node is made once
+	leaves = {}    # a leaf's label to its code
+	size = 0       # the e-nodes in the graph
+}
+root(g, c) := { while g.parent[c] != c { c = g.parent[c] }; c }
+node_key(label, children) := label + "|" + children.join(",")
+
+# the class of the e-node, made unless the graph has it
+added(g, label, children) := {
+	canonical = children.map(c => root(g, c))
+	key = node_key(label, canonical)
+	known = g.memo.get(key)
+	if known != ø { return root(g, known) }
+	c = #g.parent
+	g.parent += [c]
+	g.nodes += [[[label, canonical]]]
+	g.memo[key] = c
+	g.size += 1
+	c
+}
+code_added(g, code) := {
+	code = ungrouped(code)
+	label = label_of(code)
+	children = parts_of(code).map(part => code_added(g, part))
+	if #children == 0 { g.leaves[label] = code }
+	added(g, label, children)
+}
+# one class of the two; no when they were one already
+merged(g, a, b) := {
+	a = root(g, a)
+	b = root(g, b)
+	if a == b { return no }
+	if b < a { kept = a; a = b; b = kept }
+	g.parent[b] = a
+	g.nodes[a] = g.nodes[a] + g.nodes[b]
+	g.nodes[b] = []
+	yes
+}
+# congruence restored after merges: e-nodes whose children became the same classes are one e-node, and their
+# classes one class, until nothing changes
+rebuilt(g) := {
+	changed = yes
+	while changed {
+		changed = no
+		memo = {}
+		pending = []
+		size = 0
+		for c in 0 ..< #g.parent {
+			if g.parent[c] == c {
+				kept = []
+				for node in g.nodes[c] {
+					canonical = node[1].map(child => root(g, child))
+					key = node_key(node[0], canonical)
+					other = memo.get(key)
+					if other == ø {
+						memo[key] = c
+						kept += [[node[0], canonical]]
+					} else if other != c {
+						pending += [[other, c]]
+					}
+				}
+				g.nodes[c] = kept
+				size += #kept
+			}
+		}
+		g.memo = memo
+		g.size = size
+		for pair in pending { if merged(g, pair[0], pair[1]) { changed = yes } }
+	}
+}
+
+# --- matching ------------------------------------------------------------------------------------------------------
+# the bindings ([name, class] pairs) under which the pattern matches some e-node of class c
+matched(g, pattern, c, binding) := {
+	c = root(g, c)
+	if pattern[0] == variable_mark {
+		bound = bound_class(binding, pattern[1])
+		if bound == ø { return [binding + [[pattern[1], c]]] }
+		return if root(g, bound) == c then [binding] else []
+	}
+	found = []
+	for node in g.nodes[c] {
+		if node[0] == pattern[0] and #node[1] == #pattern[1] { found += matched_all(g, pattern[1], node[1], 0, binding) }
+	}
+	found
+}
+matched_all(g, patterns, classes, at, binding) := {
+	if at == #patterns { return [binding] }
+	found = []
+	for extended in matched(g, patterns[at], classes[at], binding) { found += matched_all(g, patterns, classes, at + 1, extended) }
+	found
+}
+bound_class(binding, name) := {
+	for pair in binding { if pair[0] == name { return pair[1] } }
+	ø
+}
+# the class of the pattern's code, its variables the classes bound
+instantiated(g, pattern, binding) := {
+	if pattern[0] == variable_mark { return bound_class(binding, pattern[1]) }
+	if #pattern[1] == 0 { g.leaves[pattern[0]] = pattern[2] }
+	added(g, pattern[0], pattern[1].map(child => instantiated(g, child, binding)))
+}
+
+# --- saturation ----------------------------------------------------------------------------------------------------
+# every rule applied at every class, round by round, until a round adds nothing (saturated: ø) or a limit is reached
+# (its name). `done(g)` ends it early, as `equal` does once both sides are one class
+saturated(g, rules, done): any := {
+	for turn in 1 ..= round_limit {
+		if done(g) { return ø }
+		found = []
+		for c in 0 ..< #g.parent {
+			if g.parent[c] == c {
+				for r in rules { for binding in matched(g, r[0], c, []) { found += [[r[1], binding, c]] } }
+			}
+		}
+		changed = no
+		for each in found {
+			if g.size > node_limit { rebuilt(g); return "the node limit " + node_limit + " in round " + turn }
+			if merged(g, instantiated(g, each[0], each[1]), each[2]) { changed = yes }
+		}
+		rebuilt(g)
+		if not changed { return ø }
+	}
+	"the round limit " + round_limit
+}
+stopped(what, limit) := warn("egraph: " + what + " stopped at " + limit + ", before the laws were exhausted")
+
+# --- extraction ----------------------------------------------------------------------------------------------------
+# each class's smallest e-node, counting every e-node of the code it stands for once
+smallest_nodes(g) := {
+	cost = [ø for c in 0 ..< #g.parent]
+	choice = [ø for c in 0 ..< #g.parent]
+	changed = yes
+	while changed {
+		changed = no
+		for c in 0 ..< #g.parent {
+			if g.parent[c] == c {
+				for node in g.nodes[c] {
+					size = node_cost(node, cost, g)
+					if size != ø and (cost[c] == ø or size < cost[c]) {
+						cost[c] = size
+						choice[c] = node
+						changed = yes
+					}
+				}
+			}
+		}
+	}
+	choice
+}
+node_cost(node, cost, g) := {
+	sum = 1
+	for child in node[1] {
+		known = cost[root(g, child)]
+		if known == ø { return ø }
+		sum += known
+	}
+	sum
+}
+code_of(g, choice, c) := {
+	node = choice[root(g, c)]
+	label = node[0]
+	parts = node[1].map(child => code_of(g, choice, child))
+	if label.starts_with(operation_label) { return grouped_operation(parts[0], label[#operation_label ..], parts[1]) }
+	if label.starts_with(list_label) { return bracketed(parts, label[#list_label ..]) }
+	g.leaves[label]
+}
+# `a * (b + c)`: an operand in parentheses only where the code would read otherwise without them
+grouped_operation(left, op, right) := {
+	for candidate in [key(left, op, right), key(grouped(left), op, right), key(left, op, grouped(right))] {
+		if parse(text(candidate)) == candidate { return candidate }
+	}
+	key(grouped(left), op, grouped(right))
+}
+grouped(code) := if is_operation(code) then bracketed([code], grouping_bracket) else code
+
+# --- the words -----------------------------------------------------------------------------------------------------
+# the smallest code equal to `code` under the rules
+simplify(code, rules) := {
+	g = EGraph()
+	start = code_added(g, code)
+	limit = saturated(g, rules, g => no)
+	if limit != ø { stopped("simplify", limit) }
+	code_of(g, smallest_nodes(g), start)
+}
+# whether the rules prove the two codes equal; a limit reached first warns that no proves nothing
+equal(a, b, rules) := {
+	g = EGraph()
+	left = code_added(g, a)
+	right = code_added(g, b)
+	limit = saturated(g, rules, g => root(g, left) == root(g, right))
+	if root(g, left) == root(g, right) { return yes }
+	if limit != ø { stopped("equal", limit) }
+	no
+}
