@@ -1,5 +1,5 @@
 # simplify finds the smallest form the laws make equal, equal proves two forms the same
-use egraph
+use "egraph.warp"
 algebra = law(data(a * b), data(b * a)) + rule(data(a * 1), data(a)) + rule(data(a + 0), data(a)) + rule(data(a * 0), data(0)) + rule(data(a * b + a * c), data(a * (b + c)))
 print simplify(data(x * y + y * z), algebra)                     # y*(x+z)
 print simplify(data((x + 0) * (y * 0)), algebra)                 # 0

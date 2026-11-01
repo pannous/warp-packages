@@ -4,8 +4,11 @@ Equality saturation over warp code (an e-graph, as in [egg](https://egraphs-good
 every form they make equal to the code, losing none, and the smallest form is taken out. Unlike a rule set
 `rules {…}`, which rewrites one way in order, an e-graph can hold a law like `a * b = b * a`.
 
+A package is used by its path (decision package-use-by-path): put this folder in your project's `packages/`, e.g.
+`git clone https://github.com/pannous/warp-packages` and link or copy `warp-packages/egraph` there.
+
 ```warp
-use egraph
+use "packages/egraph/egraph.warp"
 algebra = law(data(a * b), data(b * a)) + rule(data(a * 1), data(a)) + rule(data(a * b + a * c), data(a * (b + c)))
 print simplify(data(x * y + y * z), algebra)                 # y*(x+z)
 print equal(data(p * (q * r)), data((r * q) * p), algebra)   # yes

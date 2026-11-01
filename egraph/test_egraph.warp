@@ -1,12 +1,12 @@
 # outcome tests of the egraph package: `warp test` in this folder
 # commutativity, which a rule set `rules {…}` cannot hold, lets a / a meet its own shape
-is! 'use egraph; simplify(data(b * a / b), law(data(a * b), data(b * a)) + rule(data(a * b / b), data(a))) == data(a)' yes
-is! 'use egraph; algebra = law(data(a * b), data(b * a)) + rule(data(a * 1), data(a)) + rule(data(a + 0), data(a)) + rule(data(a * 0), data(0)) + rule(data(a * b + a * c), data(a * (b + c)))
+is! 'use "egraph.warp"; simplify(data(b * a / b), law(data(a * b), data(b * a)) + rule(data(a * b / b), data(a))) == data(a)' yes
+is! 'use "egraph.warp"; algebra = law(data(a * b), data(b * a)) + rule(data(a * 1), data(a)) + rule(data(a + 0), data(a)) + rule(data(a * 0), data(0)) + rule(data(a * b + a * c), data(a * (b + c)))
 simplify(data(x * y + y * z), algebra) == data(y * (x + z))' yes
-is! 'use egraph; simplify(data((x + 0) * (y * 0)), rule(data(a + 0), data(a)) + rule(data(a * 0), data(0)))' 0
-is! 'use egraph; simplify(data(f(x * 1, g(y + 0))), rule(data(a * 1), data(a)) + rule(data(a + 0), data(a))) == data(f(x, g(y)))' yes
-is! 'use egraph; equal(data(p * (q * r)), data((r * q) * p), law(data(a * b), data(b * a)))' yes
-is! 'use egraph; equal(data(p * q), data(q * q), law(data(a * b), data(b * a)))' no
+is! 'use "egraph.warp"; simplify(data((x + 0) * (y * 0)), rule(data(a + 0), data(a)) + rule(data(a * 0), data(0)))' 0
+is! 'use "egraph.warp"; simplify(data(f(x * 1, g(y + 0))), rule(data(a * 1), data(a)) + rule(data(a + 0), data(a))) == data(f(x, g(y)))' yes
+is! 'use "egraph.warp"; equal(data(p * (q * r)), data((r * q) * p), law(data(a * b), data(b * a)))' yes
+is! 'use "egraph.warp"; equal(data(p * q), data(q * q), law(data(a * b), data(b * a)))' no
 # laws that never saturate stop at the round limit with a warning, still giving the smallest form found
-is! 'use egraph; algebra = law(data(a * b), data(b * a)) + law(data((a * b) / c), data(a * (b / c))) + rule(data(a / a), data(1)) + rule(data(a * 1), data(a))
+is! 'use "egraph.warp"; algebra = law(data(a * b), data(b * a)) + law(data((a * b) / c), data(a * (b / c))) + rule(data(a / a), data(1)) + rule(data(a * 1), data(a))
 simplify(data(2 * y / 2), algebra) == data(y)' yes
